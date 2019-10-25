@@ -1,9 +1,12 @@
 import React, { Component } from 'react'
 import Loader from 'libe-components/lib/blocks/Loader'
 import LoadingError from 'libe-components/lib/blocks/LoadingError'
+import ArticleMeta from 'libe-components/lib/blocks/ArticleMeta'
 import ShareArticle from 'libe-components/lib/blocks/ShareArticle'
 import LibeLaboLogo from 'libe-components/lib/blocks/LibeLaboLogo'
-import ArticleMeta from 'libe-components/lib/blocks/ArticleMeta'
+import PageTitle from 'libe-components/lib/text-levels/PageTitle'
+import Paragraph from 'libe-components/lib/text-levels/Paragraph'
+import BlockTitle from 'libe-components/lib/text-levels/BlockTitle'
 
 export default class App extends Component {
   /* * * * * * * * * * * * * * * * *
@@ -13,14 +16,17 @@ export default class App extends Component {
    * * * * * * * * * * * * * * * * */
   constructor () {
     super()
-    this.c = 'lblb-some-app'
+    this.c = 'lblb-horizontal-parallel-stories'
     this.state = {
       loading_sheet: true,
       error_sheet: null,
-      data_sheet: []
+      data_sheet: [],
+      active_story: 1
     }
     this.fetchSheet = this.fetchSheet.bind(this)
     this.fetchCredentials = this.fetchCredentials.bind(this)
+    this.handleStoryScroll = this.handleStoryScroll.bind(this)
+    this.activateHome = this.activateHome.bind(this)
   }
 
   /* * * * * * * * * * * * * * * * *
@@ -88,6 +94,35 @@ export default class App extends Component {
 
   /* * * * * * * * * * * * * * * * *
    *
+   * HANDLE STORY SCROLL
+   *
+   * * * * * * * * * * * * * * * * */
+  handleStoryScroll (e) {
+    if (window.innerWidth > 1008) this.$storyContent.scrollLeft += e.deltaY
+  }
+
+  /* * * * * * * * * * * * * * * * *
+   *
+   * ACTIVATE HOME
+   *
+   * * * * * * * * * * * * * * * * */
+  activateHome () {
+    this.$storyContent.scrollLeft = 0
+    this.setState({ active_story: null })
+  }
+
+  /* * * * * * * * * * * * * * * * *
+   *
+   * ACTIVATE STORY
+   *
+   * * * * * * * * * * * * * * * * */
+  activateStory (i) {
+    this.$storyContent.scrollLeft = 0
+    this.setState({ active_story: i })
+  }
+
+  /* * * * * * * * * * * * * * * * *
+   *
    * RENDER
    *
    * * * * * * * * * * * * * * * * */
@@ -98,6 +133,7 @@ export default class App extends Component {
     const classes = [c]
     if (state.loading_sheet) classes.push(`${c}_loading`)
     if (state.error_sheet) classes.push(`${c}_error`)
+    if (state.active_story !== null) classes.push(`${c}_in-story`)
 
     /* Load & errors */
     if (state.loading_sheet) return <div className={classes.join(' ')}><div className='lblb-default-apps-loader'><Loader /></div></div>
@@ -105,16 +141,91 @@ export default class App extends Component {
 
     /* Display component */
     return <div className={classes.join(' ')}>
-      App is ready.<br />
-      - fill spreadsheet field in config.js<br />
-      - display it's content via state.data_sheet
-      <div className='lblb-default-apps-footer'>
-        <ShareArticle short iconsOnly tweet={props.meta.tweet} url={props.meta.url} />
-        <ArticleMeta publishedOn='02/09/2019 17:13' updatedOn='03/09/2019 10:36' authors={[
-          { name: 'Jean-Sol Partre', role: '', link: 'www.liberation.fr' },
-          { name: 'Maxime Fabas', role: 'Production', link: 'lol.com' }
-        ]} />
-        <LibeLaboLogo target='blank' />
+
+      {/* HOME - desktop */}
+      <div className={`${c}__home-wrapper ${c}__home-wrapper_desktop`}>
+        <div className={`${c}__desktop-doors`}>{
+          new Array(7).fill(null).map((e, i) => <div key={i}
+            className={`${c}__desktop-door`}
+            onClick={e => this.activateStory(i)}>
+            <BlockTitle>Perso {i + 1}</BlockTitle>
+          </div>)
+        }</div>
+        <div className={`${c}__desktop-title-and-intro`}>
+          <PageTitle small>Titre du format</PageTitle>
+          <Paragraph>
+            Nam at urna nec dui commodo consequat ut at nunc. Aenean scelerisque mi non pharetra convallis.<br /><br />
+            Vivamus ultrices arcu ac mauris porttitor venenatis at ac erat. Nam pretium nibh at leo faucibus efficitur. Sed fermentum tortor eget volutpat porta. Curabitur tempus nulla eu porttitor ullamcorper.
+          </Paragraph>
+          <ArticleMeta inline authors={[
+          { name: 'Doudou' },
+          { name: 'Libé Labo', role: 'Production' },
+          { name: 'Jean-Michel', role: 'Photo' }]} />
+          <ShareArticle short iconsOnly tweet={props.meta.tweet} url={props.meta.url} />
+        </div>
+      </div>
+
+      {/* HOME - mobile */}
+      <div className={`${c}__home-wrapper ${c}__home-wrapper_mobile`}>
+        <div className={`${c}__mobile-cover-image`}>
+          <div className={`${c}__mobile-title`}>
+            <PageTitle small>Titre du format</PageTitle>
+          </div>
+        </div>
+        <div className={`${c}__mobile-intro`}>
+          <Paragraph>
+            Nam at urna nec dui commodo consequat ut at nunc. Aenean scelerisque mi non pharetra convallis.<br /><br />
+            Vivamus ultrices arcu ac mauris porttitor venenatis at ac erat. Nam pretium nibh at leo faucibus efficitur. Sed fermentum tortor eget volutpat porta. Curabitur tempus nulla eu porttitor ullamcorper.
+          </Paragraph>
+          <ArticleMeta inline authors={[
+            { name: 'Doudou' },
+            { name: 'Libé Labo', role: 'Production' },
+            { name: 'Jean-Michel', role: 'Photo' }]} />
+          <ShareArticle short iconsOnly tweet={props.meta.tweet} url={props.meta.url} />
+        </div>
+        <div className={`${c}__mobile-doors`}>{
+          new Array(7).fill(null).map((e, i) => <div key={i}
+            className={`${c}__mobile-door`}
+            onClick={e => this.activateStory(i)}>
+            <div className={`${c}__mobile-door-preview`}>
+              <BlockTitle>Perso {i + 1}</BlockTitle>
+              <Paragraph>Vivamus ultrices arcu ac mauris porttitor venenatis at ac erat. Nam pretium nibh at leo faucibus efficitur. Sed fermentum tortor eget volutpat porta. Curabitur tempus nulla eu porttitor ullamcorper.</Paragraph>
+            </div>
+            <div className={`${c}__mobile-door-shadow`} />
+          </div>)
+        }</div>
+        <div className='lblb-default-apps-footer'>
+          <ShareArticle short iconsOnly tweet={props.meta.tweet} url={props.meta.url} />
+          <ArticleMeta authors={[
+            { name: 'Doudou' },
+            { name: 'Libé Labo', role: 'Production' },
+            { name: 'Jean-Michel', role: 'Photo' }]} />
+          <LibeLaboLogo target='blank' />
+        </div>
+      </div>
+
+      {/* STORY */}
+      <div className={`${c}__story-wrapper`} onClick={this.activateHome}>
+        <div className={`${c}__story`}>
+          <div className={`${c}__story-cover`}>
+            <div className={`${c}__story-title`}><BlockTitle>Story name</BlockTitle></div>
+            <div className={`${c}__story-desktop-controls`}>CONTROLS</div>
+          </div>
+          <div className={`${c}__story-content`}
+            ref={n => this.$storyContent = n}
+            onWheel={this.handleStoryScroll}>
+            <div className={`${c}__story-images-slot`}>Images</div>
+            <div className={`${c}__story-text-slot`}>Text</div>
+            <div className={`${c}__story-images-slot`}>Images</div>
+            <div className={`${c}__story-text-slot`}>Text</div>
+            <div className={`${c}__story-images-slot`}>Images</div>
+            <div className={`${c}__story-text-slot`}>Text</div>
+            <div className={`${c}__story-images-slot`}>Images</div>
+            <div className={`${c}__story-text-slot`}>Text</div>
+            <div style={{ opacity: 0 }}>.</div>
+          </div>
+          <div className={`${c}__story-mobile-controls`}>CONTROLS</div>
+        </div>
       </div>
     </div>
   }
