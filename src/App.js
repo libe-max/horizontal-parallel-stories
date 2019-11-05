@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
+import Svg from 'libe-components/lib/primitives/Svg'
 import Loader from 'libe-components/lib/blocks/Loader'
 import LoadingError from 'libe-components/lib/blocks/LoadingError'
 import ArticleMeta from 'libe-components/lib/blocks/ArticleMeta'
 import ShareArticle from 'libe-components/lib/blocks/ShareArticle'
 import LibeLaboLogo from 'libe-components/lib/blocks/LibeLaboLogo'
 import PageTitle from 'libe-components/lib/text-levels/PageTitle'
+import ParagraphTitle from 'libe-components/lib/text-levels/ParagraphTitle'
 import Paragraph from 'libe-components/lib/text-levels/Paragraph'
 import BlockTitle from 'libe-components/lib/text-levels/BlockTitle'
 
@@ -21,12 +23,17 @@ export default class App extends Component {
       loading_sheet: true,
       error_sheet: null,
       data_sheet: [],
-      active_story: 1
+      active_story: 1,
+      body_padding_top: 0
     }
     this.fetchSheet = this.fetchSheet.bind(this)
     this.fetchCredentials = this.fetchCredentials.bind(this)
     this.handleStoryScroll = this.handleStoryScroll.bind(this)
     this.activateHome = this.activateHome.bind(this)
+    this.handleHeaderHeightChange = this.handleHeaderHeightChange.bind(this)
+    this.activatePrevStory = this.activatePrevStory.bind(this)
+    this.activateNextStory = this.activateNextStory.bind(this)
+    window.addEventListener('lblb-header-height-change', this.handleHeaderHeightChange)
   }
 
   /* * * * * * * * * * * * * * * * *
@@ -99,7 +106,18 @@ export default class App extends Component {
    *
    * * * * * * * * * * * * * * * * */
   handleStoryScroll (e) {
-    if (window.innerWidth > 1008) this.$storyContent.scrollLeft += e.deltaY
+    const windowWidth = document.documentElement.clientWidth
+    const rem = 16
+    if (windowWidth > 63 * rem) this.$storyContent.scrollLeft += e.deltaY
+  }
+
+  /* * * * * * * * * * * * * * * * *
+   *
+   * HANDLE HEADER HEIGHT CHANGE
+   *
+   * * * * * * * * * * * * * * * * */
+  handleHeaderHeightChange (e) {
+    return this.setState({ body_padding_top: window.LBLB_GLOBAL.body_padding_top })
   }
 
   /* * * * * * * * * * * * * * * * *
@@ -124,6 +142,24 @@ export default class App extends Component {
 
   /* * * * * * * * * * * * * * * * *
    *
+   * ACTIVATE PREV STORY
+   *
+   * * * * * * * * * * * * * * * * */
+  activatePrevStory () {
+    console.log('activate prev')
+  }
+
+  /* * * * * * * * * * * * * * * * *
+   *
+   * ACTIVATE NEXT STORY
+   *
+   * * * * * * * * * * * * * * * * */
+  activateNextStory () {
+    console.log('activate next')
+  }
+
+  /* * * * * * * * * * * * * * * * *
+   *
    * RENDER
    *
    * * * * * * * * * * * * * * * * */
@@ -140,11 +176,20 @@ export default class App extends Component {
     if (state.loading_sheet) return <div className={classes.join(' ')}><div className='lblb-default-apps-loader'><Loader /></div></div>
     if (state.error_sheet) return <div className={classes.join(' ')}><div className='lblb-default-apps-error'><LoadingError /></div></div>
 
+    /* Inner logic */
+    const windowHeight = document.documentElement.clientHeight
+    const windowWidth = document.documentElement.clientWidth
+    const rem = 16
+    const displayMode = windowWidth > 63 * rem ? 'lg' : windowWidth > 40 * rem ? 'md' : 'sm'
+    const contentHeight = windowHeight - state.body_padding_top
+    const contentStyle = { height: displayMode === 'lg' ? contentHeight : null }
+
     /* Display component */
     return <div className={classes.join(' ')}>
 
       {/* HOME - desktop */}
-      <div className={`${c}__home-wrapper ${c}__home-wrapper_desktop`}>
+      <div className={`${c}__home-wrapper ${c}__home-wrapper_desktop`}
+        style={contentStyle}>
         <div className={`${c}__desktop-doors`}>{
           new Array(7).fill(null).map((e, i) => <div key={i}
             className={`${c}__desktop-door`}
@@ -206,11 +251,23 @@ export default class App extends Component {
       </div>
 
       {/* STORY */}
-      <div className={`${c}__story-wrapper`} onClick={this.activateHome}>
+      <div className={`${c}__story-wrapper`} style={contentStyle}>
         <div className={`${c}__story`}>
           <div className={`${c}__story-cover`}>
             <div className={`${c}__story-title`}><BlockTitle>Story name</BlockTitle></div>
-            <div className={`${c}__story-desktop-controls`}>CONTROLS</div>
+            <div className={`${c}__story-desktop-controls`}>
+              <button className={`${c}__story-go-prev`} onClick={this.activatePrevStory}>
+                <Svg src={`${props.statics_url}/assets/left-arrow-head-icon_24.svg`} />
+                <BlockTitle small>Prev</BlockTitle>
+              </button>
+              <button className={`${c}__story-go-home`} onClick={this.activateHome}>
+                <BlockTitle small>Menu</BlockTitle>
+              </button>
+              <button className={`${c}__story-go-next`} onClick={this.activateNextStory}>
+                <BlockTitle small>Next</BlockTitle>
+                <Svg src={`${props.statics_url}/assets/right-arrow-head-icon_24.svg`} />
+              </button>
+            </div>
           </div>
           <div className={`${c}__story-content`}
             ref={n => this.$storyContent = n}
@@ -225,7 +282,11 @@ export default class App extends Component {
             <div className={`${c}__story-text-slot`}>Text</div>
             <div style={{ opacity: 0 }}>.</div>
           </div>
-          <div className={`${c}__story-mobile-controls`}>CONTROLS</div>
+          <div className={`${c}__story-mobile-controls`}>
+            <button className={`${c}__story-go-prev`} onClick={this.activatePrevStory}>PREV</button>
+            <button className={`${c}__story-go-home`} onClick={this.activateHome}>MENU</button>
+            <button className={`${c}__story-go-next`} onClick={this.activateNextStory}>NEXT</button>
+          </div>
         </div>
       </div>
     </div>
