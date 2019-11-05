@@ -31,6 +31,7 @@ class AppWrapper extends Component {
       }
     })
     window.setInterval(this.getElementsHeight, 250)
+    window.onresize = this.getElementsHeight
   }
 
   /* * * * * * * * * * * * * * * * *
