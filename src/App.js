@@ -7,7 +7,8 @@ import LoadingError from 'libe-components/lib/blocks/LoadingError'
 import ArticleMeta from 'libe-components/lib/blocks/ArticleMeta'
 import ShareArticle from 'libe-components/lib/blocks/ShareArticle'
 import LibeLaboLogo from 'libe-components/lib/blocks/LibeLaboLogo'
-import PageTitle from 'libe-components/lib/text-levels/PageTitle'
+import Photo from 'libe-components/lib/blocks/Photo'
+import SectionTitle from 'libe-components/lib/text-levels/SectionTitle'
 import Paragraph from 'libe-components/lib/text-levels/Paragraph'
 import BlockTitle from 'libe-components/lib/text-levels/BlockTitle'
 
@@ -87,7 +88,7 @@ export default class App extends Component {
       const reach = await window.fetch(this.props.spreadsheet)
       if (!reach.ok) throw reach
       const data = await reach.text()
-      const [page, authors, stories, blocks] = parseTsv(data, [7, 3, 4, 5])
+      const [page, authors, stories, blocks] = parseTsv(data, [8, 3, 4, 5])
       this.setState({ loading_sheet: false, error_sheet: null, data_sheet: {
         page: page[0],
         authors,
@@ -133,6 +134,7 @@ export default class App extends Component {
    *
    * * * * * * * * * * * * * * * * */
   activateHome () {
+    window.scrollTo(0, 0)
     this.$storyContent.scrollLeft = 0
     this.setState({ active_story: null })
   }
@@ -143,6 +145,7 @@ export default class App extends Component {
    *
    * * * * * * * * * * * * * * * * */
   activateStory (id) {
+    window.scrollTo(0, 0)
     this.$storyContent.scrollLeft = 0
     this.setState({ active_story: id })
   }
@@ -239,8 +242,6 @@ export default class App extends Component {
     const activeStory = this.getActiveStory()
     const nextStory = this.getNextStory()
 
-    console.log(activeStory, previousStory, nextStory)
-
     /* Assign classes */
     const classes = [c]
     if (state.loading_sheet) classes.push(`${c}_loading`)
@@ -266,14 +267,18 @@ export default class App extends Component {
       <div className={`${c}__home-wrapper ${c}__home-wrapper_desktop`}
         style={contentStyle}>
         <div className={`${c}__desktop-doors`}>{
-          data.stories.map(story => <div key={story.id}
+          data.stories.map((story, i) => <div key={story.id}
             className={`${c}__desktop-door`}
+            style={{
+              backgroundImage: `linear-gradient(to bottom, rgba(33, 33, 33, .5) 0%, rgba(33, 33, 33, 0) 25%), url(${story.cover_img_url})`,
+              width: `${100 / data.stories.length}%`
+            }}
             onClick={e => this.activateStory(story.id)}>
             <BlockTitle>{story.title}</BlockTitle>
           </div>)
         }</div>
         <div className={`${c}__desktop-title-and-intro`}>
-          <PageTitle small>{data.page.title}</PageTitle>
+          <SectionTitle level={1}>{data.page.title}</SectionTitle>
           <Paragraph><JSXInterpreter content={data.page.intro} /></Paragraph>
           <ArticleMeta inline authors={data.authors} />
           <ShareArticle short iconsOnly tweet={data.page.tweet} />
@@ -282,9 +287,10 @@ export default class App extends Component {
 
       {/* HOME - mobile */}
       <div className={`${c}__home-wrapper ${c}__home-wrapper_mobile`}>
-        <div className={`${c}__mobile-cover-image`}>
+        <div className={`${c}__mobile-cover-image`}
+          style={{ backgroundImage: `url(${data.page.gif_url})` }}>
           <div className={`${c}__mobile-title`}>
-            <PageTitle small>{data.page.title}</PageTitle>
+            <SectionTitle level={1}>{data.page.title}</SectionTitle>
           </div>
         </div>
         <div className={`${c}__mobile-intro`}>
@@ -295,6 +301,7 @@ export default class App extends Component {
         <div className={`${c}__mobile-doors`}>{
           data.stories.map(story => <div key={story.id}
             className={`${c}__mobile-door`}
+            style={{ backgroundImage: `url(${story.cover_img_url})` }}
             onClick={e => this.activateStory(story.id)}>
             <div className={`${c}__mobile-door-preview`}>
               <BlockTitle>{story.title}</BlockTitle>
@@ -313,8 +320,9 @@ export default class App extends Component {
       {/* STORY */}
       <div className={`${c}__story-wrapper`} style={contentStyle}>
         <div className={`${c}__story`}>
-          <div className={`${c}__story-cover`}>
-            <div className={`${c}__story-title`}><BlockTitle>{activeStory.title}</BlockTitle></div>
+          <div className={`${c}__story-cover`}
+            style={{ backgroundImage: `url(${activeStory.cover_img_url})` }}>
+            <div className={`${c}__story-title`}><BlockTitle huge>{activeStory.title}</BlockTitle></div>
             <div className={`${c}__story-desktop-controls`}>
               <button className={`${c}__story-go-prev`} onClick={this.activatePrevStory}>
                 <Svg src={`${props.statics_url}/assets/left-arrow-head-icon_24.svg`} />
@@ -333,11 +341,22 @@ export default class App extends Component {
             ref={n => this.$storyContent = n}
             onWheel={this.handleStoryScroll}>{
               Array.isArray(activeStory._blocks)
-                ? activeStory._blocks.map((block, i) => <div className={`${c}__story-${block.type}-slot`}>
-                  {block.type}
-                </div>)
-                : ''
-            }<div style={{ opacity: 0 }}>.</div>
+              ? activeStory._blocks.map((block, i) => {
+                if (block.type === 'text') return <div key={i}
+                  className={`${c}__story-text-slot`}>
+                  <Paragraph><JSXInterpreter content={block.content} /></Paragraph>
+                </div>
+                else if (block.type === 'image') return <div key={i}
+                  className={`${c}__story-image-slot`}>{
+                  block.thumb_images_url
+                    .split(',')
+                    .map(url => <Photo key={url} expandable src={url.trim()} />)
+                }</div>
+                else return ''
+              })
+              : ''
+            }
+            <div className={`${c}__story-text-slot`}><ArticleMeta authors={data.authors} /></div>
           </div>
           <div className={`${c}__story-mobile-controls`}>
             <button className={`${c}__story-go-prev`} onClick={this.activatePrevStory}>PREV</button>

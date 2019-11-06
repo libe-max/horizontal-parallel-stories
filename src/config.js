@@ -2,7 +2,7 @@ module.exports = {
   meta: {
     author: 'Maxime Fabas',
     title: '',
-    url: '',
+    url: 'https://www.liberation.fr/apps/2019/11/sainte-anne-photo',
     description: '',
     image: '',
     xiti_id: 'test',

@@ -2,9 +2,10 @@
   "name": "libe-apps-template",
   "version": "0.2.3",
   "private": true,
+  "homepage": "https://www.liberation.fr/apps/2019/11/sainte-anne-photo",
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
-    "libe-components": "^1.0.0",
+    "libe-components": "^1.0.2",
     "libe-utils": "^1.0.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
