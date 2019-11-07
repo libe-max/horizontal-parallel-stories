@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import parseTsv from 'libe-utils/parse-tsv'
+// import parseTsv from 'libe-utils/parse-tsv'
+import parseTsv from './utils/parse-tsv'
 import Svg from 'libe-components/lib/primitives/Svg'
 import JSXInterpreter from 'libe-components/lib/logic/JSXInterpreter'
 import Loader from 'libe-components/lib/blocks/Loader'
@@ -88,7 +89,7 @@ export default class App extends Component {
       const reach = await window.fetch(this.props.spreadsheet)
       if (!reach.ok) throw reach
       const data = await reach.text()
-      const [page, authors, stories, blocks] = parseTsv(data, [8, 3, 4, 5])
+      const [page, authors, stories, blocks] = parseTsv(data, [8, 3, 5, 5])
       this.setState({ loading_sheet: false, error_sheet: null, data_sheet: {
         page: page[0],
         authors,
@@ -116,7 +117,10 @@ export default class App extends Component {
    *
    * * * * * * * * * * * * * * * * */
   handleStoryScroll (e) {
-    if (window.LBLB_GLOBAL.current_display === 'lg') this.$storyContent.scrollLeft += e.deltaY
+    const scrolled = e.nativeEvent.wheelDelta
+      ? e.nativeEvent.deltaY
+      : e.nativeEvent.deltaY * 40
+    if (window.LBLB_GLOBAL.current_display === 'lg') this.$storyContent.scrollLeft += scrolled
   }
 
   /* * * * * * * * * * * * * * * * *
@@ -270,15 +274,15 @@ export default class App extends Component {
           data.stories.map((story, i) => <div key={story.id}
             className={`${c}__desktop-door`}
             style={{
-              backgroundImage: `linear-gradient(to bottom, rgba(33, 33, 33, .5) 0%, rgba(33, 33, 33, 0) 25%), url(${story.cover_img_url})`,
+              backgroundImage: `linear-gradient(to bottom, rgba(33, 33, 33, .5) 0%, rgba(33, 33, 33, 0) 25%), url(${story.home_cover_img_url})`,
               width: `${100 / data.stories.length}%`
             }}
             onClick={e => this.activateStory(story.id)}>
-            <BlockTitle>{story.title}</BlockTitle>
+            <BlockTitle big>{story.title}</BlockTitle>
           </div>)
         }</div>
         <div className={`${c}__desktop-title-and-intro`}>
-          <SectionTitle level={1}>{data.page.title}</SectionTitle>
+          <SectionTitle level={1}><JSXInterpreter content={data.page.title} /></SectionTitle>
           <Paragraph><JSXInterpreter content={data.page.intro} /></Paragraph>
           <ArticleMeta inline authors={data.authors} />
           <ShareArticle short iconsOnly tweet={data.page.tweet} />
@@ -290,7 +294,7 @@ export default class App extends Component {
         <div className={`${c}__mobile-cover-image`}
           style={{ backgroundImage: `url(${data.page.gif_url})` }}>
           <div className={`${c}__mobile-title`}>
-            <SectionTitle level={1}>{data.page.title}</SectionTitle>
+            <SectionTitle big level={1}><JSXInterpreter content={data.page.title} /></SectionTitle>
           </div>
         </div>
         <div className={`${c}__mobile-intro`}>
@@ -301,7 +305,7 @@ export default class App extends Component {
         <div className={`${c}__mobile-doors`}>{
           data.stories.map(story => <div key={story.id}
             className={`${c}__mobile-door`}
-            style={{ backgroundImage: `url(${story.cover_img_url})` }}
+            style={{ backgroundImage: `url(${story.home_cover_img_url})` }}
             onClick={e => this.activateStory(story.id)}>
             <div className={`${c}__mobile-door-preview`}>
               <BlockTitle>{story.title}</BlockTitle>
@@ -342,26 +346,56 @@ export default class App extends Component {
             onWheel={this.handleStoryScroll}>{
               Array.isArray(activeStory._blocks)
               ? activeStory._blocks.map((block, i) => {
-                if (block.type === 'text') return <div key={i}
-                  className={`${c}__story-text-slot`}>
-                  <Paragraph><JSXInterpreter content={block.content} /></Paragraph>
-                </div>
-                else if (block.type === 'image') return <div key={i}
-                  className={`${c}__story-image-slot`}>{
-                  block.thumb_images_url
-                    .split(',')
-                    .map(url => <Photo key={url} expandable src={url.trim()} />)
-                }</div>
-                else return ''
+                if (block.type === 'text') {
+                  return <div key={i} className={`${c}__story-text-slot`}>
+                    <Paragraph><JSXInterpreter content={block.content} /></Paragraph>
+                  </div>
+                } else if (block.type === 'image') {
+                  const images = block.thumb_images_url.split(',').map(url => url.trim())
+                  let className = `${c}__story-image-slot`
+                  if (images.length === 1) className += ` ${c}__story-image-slot_single`
+                  return <div key={i} className={className}>{
+                    images.map((url, i) => {
+                      return <Photo key={url} expandable src={url} />
+                    })
+                  }</div>
+                } else if (block.type === 'image-vertical') {
+                  const images = block.thumb_images_url.split(',').map(url => url.trim())
+                  let className = `${c}__story-image-slot ${c}__story-image-slot_vertical`
+                  if (images.length === 1) className += ` ${c}__story-image-slot_single`
+                  const pairs = [[]]
+                  images.forEach(image => {
+                    if (pairs[pairs.length - 1].length >= 2) pairs.push([])
+                    pairs[pairs.length - 1].push(image)
+                  })
+                  return <div key={i} className={className}>{
+                    pairs.map((pair, i) => {
+                      return <div key={pair.join('')} className={`${c}__story-image-slot-lame-flex-fix`}>{
+                        pair.map((url, i) => {
+                          return <Photo key={url} expandable src={url} />
+                        })
+                      }</div>
+                    })
+                  }</div>
+                } else return ''
               })
               : ''
             }
-            <div className={`${c}__story-text-slot`}><ArticleMeta authors={data.authors} /></div>
+            {/*<div className={`${c}__story-text-slot`}><ArticleMeta authors={data.authors} /></div>*/}
+            <div>.</div>
           </div>
           <div className={`${c}__story-mobile-controls`}>
-            <button className={`${c}__story-go-prev`} onClick={this.activatePrevStory}>PREV</button>
-            <button className={`${c}__story-go-home`} onClick={this.activateHome}>MENU</button>
-            <button className={`${c}__story-go-next`} onClick={this.activateNextStory}>NEXT</button>
+            <button className={`${c}__story-go-prev`} onClick={this.activatePrevStory}>
+              <Svg src={`${props.statics_url}/assets/left-arrow-head-icon_24.svg`} />
+              <Paragraph small>{previousStory.title}</Paragraph>
+            </button>
+            <button className={`${c}__story-go-home`} onClick={this.activateHome}>
+              <BlockTitle small>Menu</BlockTitle>
+            </button>
+            <button className={`${c}__story-go-next`} onClick={this.activateNextStory}>
+              <Paragraph small>{nextStory.title}</Paragraph>
+              <Svg src={`${props.statics_url}/assets/right-arrow-head-icon_24.svg`} />
+            </button>
           </div>
         </div>
       </div>

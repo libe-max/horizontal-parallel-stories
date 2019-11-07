@@ -1,0 +1,36 @@
+
+OK - dégradé pour contraster le titre
+
+OK - gagner de la place sur le cartouche titre en dsktp
+OK - recadrer les photos d'appel pour la home, mais pas pour les pages détail
+- player fixé tout le temps en bas (avec ombre)
+
+OK -titre mobile blanc avec ombre
+
+OK - desktop ombre sous image fixe dans story
+
+OK - btns menu qui bougent
+
+- centrer les images zoomées
+- penser aux styles normal, quote
+
+OK - mobile : marge autour de la signature
+OK - mobile : attention au niveau de scroll
+- !! sauvegarder les niveaux de scroll
+- mobile : animer l'ouverture des stories
+OK - mobile : début de la story qui mange sur l'image
+- mobile : les quadriptyques sont en ligne et scrollables
+
+- changer l'ordre des persos
+
+- dyptiques verticaux...
+- !!! JÉRÔME 11 DYP BAS INTROUVABLE
+- !!! EMMA 3 B QUADRI INTROUVABLE
+- !!! EMMA 5 B INTROUVABLE
+- !!! VANESSA 10 INTROUVABLE
+
+- Thomas et Alex, signature Yann, les autres Dounia
+
+- Crédit Yann : Yann Castanier/Hans Lucas pour Libératon/Polka Magazine
+
+
