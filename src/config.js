@@ -1,12 +1,12 @@
 module.exports = {
   meta: {
-    author: 'Maxime Fabas',
-    title: '',
+    author: 'Christelle Causse, Yann Castanier, Maxime Fabas, Dounia Hadni',
+    title: 'Visages de Sainte-Anne',
     url: 'https://www.liberation.fr/apps/2019/11/sainte-anne-photo',
-    description: '',
-    image: '',
-    xiti_id: 'test',
-    tweet: 'Some tweet text'
+    description: '[En images] Pendant plusieurs mois, le photographe Yann Castanier et la journaliste Dounia Hadni ont suivi des patients du secteur 15 de l\'hôpital psychiatrique parisien.',
+    image: 'https://www.liberation.fr/apps/2019/11/sainte-anne-photo/social.jpg',
+    xiti_id: 'visages-de-sainte-anne',
+    tweet: '[EN IMAGES] Pendant plusieurs mois, @libe a suivi des patients du secteur 15 de l\'hôpital psychiatrique parisien.'
   },
   tracking: {
     active: false,

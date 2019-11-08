@@ -381,19 +381,18 @@ export default class App extends Component {
               })
               : ''
             }
-            {/*<div className={`${c}__story-text-slot`}><ArticleMeta authors={data.authors} /></div>*/}
             <div>.</div>
           </div>
           <div className={`${c}__story-mobile-controls`}>
             <button className={`${c}__story-go-prev`} onClick={this.activatePrevStory}>
               <Svg src={`${props.statics_url}/assets/left-arrow-head-icon_24.svg`} />
-              <Paragraph small>{previousStory.title}</Paragraph>
+              <BlockTitle small>{previousStory.title}</BlockTitle>
             </button>
             <button className={`${c}__story-go-home`} onClick={this.activateHome}>
               <BlockTitle small>Menu</BlockTitle>
             </button>
             <button className={`${c}__story-go-next`} onClick={this.activateNextStory}>
-              <Paragraph small>{nextStory.title}</Paragraph>
+              <BlockTitle small>{nextStory.title}</BlockTitle>
               <Svg src={`${props.statics_url}/assets/right-arrow-head-icon_24.svg`} />
             </button>
           </div>
