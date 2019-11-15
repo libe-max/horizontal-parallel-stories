@@ -21,5 +21,7 @@ module.exports = {
     ? 'https://libe-labo-2.site/api'
     : 'http://localhost:3004/api',
   stylesheet: 'horizontal-parallel-stories.css',
-  spreadsheet: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSf5Xw9YRRvef2EAXSJEfy7VzDLSGk9jKsrpG5Aa-Ih66j73S1dj9bARY2jXaX-75Dl9QFA3wVMOikz/pub?gid=2066685473&single=true&output=tsv'
+  spreadsheet: process.env.NODE_ENV === 'production'
+    ? 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSf5Xw9YRRvef2EAXSJEfy7VzDLSGk9jKsrpG5Aa-Ih66j73S1dj9bARY2jXaX-75Dl9QFA3wVMOikz/pub?gid=2066685473&single=true&output=tsv'
+    : 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1XYFZbtyMUurei7gYcdoz76K40wNxpeHt4d_q-YJJuZ87oHcQt7rzPwUlAULkjXtbhIRwqcvqgDmY/pub?gid=2066685473&single=true&output=tsv'
 }

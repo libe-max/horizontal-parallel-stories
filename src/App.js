@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
-// import parseTsv from 'libe-utils/parse-tsv'
-import parseTsv from './utils/parse-tsv'
+import parseTsv from 'libe-utils/parse-tsv'
 import Svg from 'libe-components/lib/primitives/Svg'
 import JSXInterpreter from 'libe-components/lib/logic/JSXInterpreter'
 import Loader from 'libe-components/lib/blocks/Loader'
@@ -12,6 +11,7 @@ import Photo from 'libe-components/lib/blocks/Photo'
 import SectionTitle from 'libe-components/lib/text-levels/SectionTitle'
 import Paragraph from 'libe-components/lib/text-levels/Paragraph'
 import BlockTitle from 'libe-components/lib/text-levels/BlockTitle'
+import Quote from 'libe-components/lib/text-levels/Quote'
 
 export default class App extends Component {
   /* * * * * * * * * * * * * * * * *
@@ -27,7 +27,8 @@ export default class App extends Component {
       error_sheet: null,
       data_sheet: [],
       active_story: null,
-      body_padding_top: 0
+      body_padding_top: 0,
+      show_story_scroll_hint: true
     }
     this.fetchSheet = this.fetchSheet.bind(this)
     this.fetchCredentials = this.fetchCredentials.bind(this)
@@ -89,7 +90,7 @@ export default class App extends Component {
       const reach = await window.fetch(this.props.spreadsheet)
       if (!reach.ok) throw reach
       const data = await reach.text()
-      const [page, authors, stories, blocks] = parseTsv(data, [8, 3, 5, 5])
+      const [page, authors, stories, blocks] = parseTsv(data, [9, 3, 6, 5])
       this.setState({ loading_sheet: false, error_sheet: null, data_sheet: {
         page: page[0],
         authors,
@@ -117,10 +118,15 @@ export default class App extends Component {
    *
    * * * * * * * * * * * * * * * * */
   handleStoryScroll (e) {
-    const scrolled = e.nativeEvent.wheelDelta
-      ? e.nativeEvent.deltaY
-      : e.nativeEvent.deltaY * 40
-    if (window.LBLB_GLOBAL.current_display === 'lg') this.$storyContent.scrollLeft += scrolled
+    if (window.LBLB_GLOBAL.current_display !== 'lg') return
+    const scrolled = e
+      ? e.nativeEvent.wheelDelta
+        ? e.nativeEvent.deltaY
+        : e.nativeEvent.deltaY * 40
+      : 0
+    this.$storyContent.scrollLeft += scrolled
+    if (this.state.show_story_scroll_hint && this.$storyContent.scrollLeft >= 40) return this.setState({ show_story_scroll_hint: false })
+    return
   }
 
   /* * * * * * * * * * * * * * * * *
@@ -151,7 +157,7 @@ export default class App extends Component {
   activateStory (id) {
     window.scrollTo(0, 0)
     this.$storyContent.scrollLeft = 0
-    this.setState({ active_story: id })
+    this.setState({ active_story: id }, this.handleStoryScroll)
   }
 
   /* * * * * * * * * * * * * * * * *
@@ -251,6 +257,7 @@ export default class App extends Component {
     if (state.loading_sheet) classes.push(`${c}_loading`)
     if (state.error_sheet) classes.push(`${c}_error`)
     if (state.active_story !== null) classes.push(`${c}_in-story`)
+    if (state.show_story_scroll_hint) classes.push(`${c}_show-story-scroll-hint`)
 
     /* Load & errors */
     if (state.loading_sheet) return <div className={classes.join(' ')}><div className='lblb-default-apps-loader'><Loader /></div></div>
@@ -282,7 +289,7 @@ export default class App extends Component {
           </div>)
         }</div>
         <div className={`${c}__desktop-title-and-intro`}>
-          <SectionTitle level={1}><JSXInterpreter content={data.page.title} /></SectionTitle>
+          <SectionTitle level={1}><JSXInterpreter content={data.page.title_desktop} /></SectionTitle>
           <Paragraph><JSXInterpreter content={data.page.intro} /></Paragraph>
           <ArticleMeta inline authors={data.authors} />
           <ShareArticle short iconsOnly tweet={data.page.tweet} />
@@ -294,7 +301,7 @@ export default class App extends Component {
         <div className={`${c}__mobile-cover-image`}
           style={{ backgroundImage: `url(${data.page.gif_url})` }}>
           <div className={`${c}__mobile-title`}>
-            <SectionTitle big level={1}><JSXInterpreter content={data.page.title} /></SectionTitle>
+            <SectionTitle big level={1}><JSXInterpreter content={data.page.title_mobile} /></SectionTitle>
           </div>
         </div>
         <div className={`${c}__mobile-intro`}>
@@ -350,6 +357,12 @@ export default class App extends Component {
                   return <div key={i} className={`${c}__story-text-slot`}>
                     <Paragraph><JSXInterpreter content={block.content} /></Paragraph>
                   </div>
+
+                } else if (block.type === 'text-quote') {
+                  return <div key={i} className={`${c}__story-text-slot ${c}__story-text-slot_quote`}>
+                    <Quote literary big decoration><JSXInterpreter content={block.content} /></Quote>
+                  </div>                  
+
                 } else if (block.type === 'image') {
                   const images = block.thumb_images_url.split(',').map(url => url.trim())
                   let className = `${c}__story-image-slot`
@@ -359,6 +372,7 @@ export default class App extends Component {
                       return <Photo key={url} expandable src={url} />
                     })
                   }</div>
+
                 } else if (block.type === 'image-vertical') {
                   const images = block.thumb_images_url.split(',').map(url => url.trim())
                   let className = `${c}__story-image-slot ${c}__story-image-slot_vertical`
@@ -381,7 +395,15 @@ export default class App extends Component {
               })
               : ''
             }
-            <div>.</div>
+            <div className={`${c}__story-text-slot ${c}__story-text-slot_authors`}>
+              <ArticleMeta authors={[{ name: activeStory.authors }, { name: 'Libé Labo', role: 'Production' }]} />
+            </div>
+            <div>&nbsp;</div>
+            <div className={`${c}__story-scroll-hint`}
+              onMouseOver={e => this.setState({ show_story_scroll_hint: false })}>
+              <Paragraph>Faites défiler</Paragraph>
+              <Svg src={`${props.statics_url}/assets/right-arrow-head-icon_24.svg`} />
+            </div>
           </div>
           <div className={`${c}__story-mobile-controls`}>
             <button className={`${c}__story-go-prev`} onClick={this.activatePrevStory}>
